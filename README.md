@@ -13,8 +13,19 @@ A Python wrapper for the WebCOOS API.
 
 ## Installation
 
+For general use:
+
 ```bash
 pip install git+https://github.com/WebCOOS/py-webcoos-client
+```
+
+For development:
+
+```bash
+git clone https://github.com/WebCOOS/py-webcoos-client.git
+cd py-webcoos-client
+conda env create -f environment.yml
+conda activate py-webcoos-client
 ```
 
 
