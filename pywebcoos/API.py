@@ -6,6 +6,7 @@ Created on Mon Sep  9 15:32:29 2024
 """
 
 import datetime
+import logging 
 import numpy as np
 import os
 import pandas as pd
@@ -14,15 +15,31 @@ import pytz
 
 class API():
 
-    def __init__(self,token):
+    def __init__(self,token,verbose=True):
         '''
-        Class to interface with the WebCOOS API, written by Greg Dusek and Matt Conlin.
-
+        Class to interface with the WebCOOS API.
+        
+        args:
+        _ _ _ _ _ _ 
+        token : str
+            Your WebCOOS API access token.
+        verbose : bool, optional
+            Whether or not to make the API calls verbose in their output. If True, relevant logging
+            messages will be shown. If False, only error logging messages will be shown.
+            Default is True.
+        
         Example usage:
-        webcoos = API(token) # Must register on website to get a toeken
-        webcoos.cameras 
-        webcoos.download('Charleston Harbor, SC',201901011200 201901011300)
+        _ _ _ _ _ _ 
+        api = API(token) # Must register on website to get a toeken
+        print(api.get_cameras()) 
+        fnames = webcoos.download('Charleston Harbor, SC',201901011200 201901011300)
         '''
+        # Set the logging level #
+        if verbose:
+            logging.basicConfig(level=logging.INFO)
+        else:
+            logging.basicConfig(level=logging.ERROR)
+
         # Establish the base URL and headers for requests #
         self.api_base_url = 'https://app.webcoos.org/webcoos/api/v1'
         self.HEADERS = {
@@ -34,21 +51,22 @@ class API():
         df_cams = self._get_camera_list(self.assets_json)
         self.cameras = df_cams
         
-    def view_cameras(self):
-        print(self.cameras)
+    def get_cameras(self):
+        return self.cameras
     
-    def view_products(self,camera_name):
+    def get_products(self,camera_name):
         '''
         Function to view the available products at a camera.
         '''
         feeds = self._get_camera_feeds(camera_name,self.assets_json)
         feed_name = 'raw-video-data'
         products = self._get_camera_products(feed_name,feeds,camera_name)
-        print(f"Products for camera '{camera_name}' and feed '{feed_name}':")
+        product_labels = []
         for product in products:
-            print(product['data']['common']['label'])  # Printing the product label       
+            product_labels.append(product['data']['common']['label'])  # Returning the product label      
+        return product_labels
     
-    def view_inventory(self,camera_name,product_name):
+    def get_inventory(self,camera_name,product_name):
         '''
         Function to view available data for a product at a camera.
         '''
@@ -58,11 +76,10 @@ class API():
         service_slug,df_inv = self._get_service_slug(product_name,products,feed_name,camera_name,self.api_base_url,self.HEADERS)
         # How many days of data are there?
         total_days_with_data = df_inv['Has Data?'].sum()
-        print(f"Total days of data: {total_days_with_data}")
         # What is the range of dates with data?
         min_date = df_inv['Bin Start'].min()
         max_date = df_inv['Bin End'].max()
-        print(f"Data range: {min_date} to {max_date}")
+        return [min_date,max_date]
         
     def download(self,camera_name,product_name,start,stop,interval,save_dir):
         '''
@@ -89,8 +106,8 @@ class API():
             #Return the assets json
             return response.json()
         else:
-            # Print error information if the request was not successful
-            print(f"Failed to retrieve assets: {response.status_code} {response.text}")
+            # raise error information if the request was not successful
+            logging.error(f"Failed to retrieve assets: {response.status_code} {response.text}")
             return None
 
       
@@ -114,11 +131,7 @@ class API():
         '''
         for asset in assets_json['results']:
             if asset['data']['common']['label'] == camera_name:
-                # print(f"Feeds for camera '{camera_name}':")
                 feeds = asset['feeds']
-                for feed in feeds:
-                    pass
-                    # print(feed['data']['common']['label'])  # Printing the feed label
                 break
         return feeds
 
@@ -140,11 +153,11 @@ class API():
         # go through and find the service_slug for the desired product
         for product in products:
             if product['data']['common']['label'] == product_name:
-                print(f"Services for camera '{camera_name}', feed '{feed_name}' and product '{product_name}':")
+                logging.info(f"Services for camera '{camera_name}', feed '{feed_name}' and product '{product_name}':")
                 services = product['services']
                 for service in services:
                     service_slug = service['data']['common']['slug']
-                    print(service_slug)  # Printing the service slug
+                    logging.info(service_slug)  # Printing the service slug
                 break
 
         #Get the data inventory information for the service slug
@@ -157,7 +170,7 @@ class API():
             inventory_json = response.json()
         else:
             # Print error information if the request was not successful
-            print(f"Failed to retrieve assets: {response.status_code} {response.text}")
+            logging.error(f"Failed to retrieve assets: {response.status_code} {response.text}")
 
         #Put the data inventory into a dataframe for further analsyis and to provide some basic summary stats
         inventory_data = inventory_json['results'][0]['values']
@@ -184,19 +197,19 @@ class API():
 
         #Run through the response for each page, adding to all_elements with the additional results and print updates to the screen
         while True:
-            print(f"Fetching page: {page}")
+            logging.info(f"Fetching page: {page}")
             response = requests.get(base_url, headers=HEADERS, params=params)
             if response.status_code != 200:
-                print(f"Failed to fetch page {page}: {response.status_code}")
+                logging.error(f"Failed to fetch page {page}: {response.status_code}")
                 break
             data = response.json()
             all_elements.extend(data['results'])
-            print(f"Received {len(data['results'])} elements, total elements collected: {len(all_elements)}")
+            logging.info(f"Received {len(data['results'])} elements, total elements collected: {len(all_elements)}")
 
             # Update the URL for the next request or break the loop if no more pages
             next_url = data.get('pagination', {}).get('next')
             if not next_url:
-                print("No more pages.")
+                logging.info("No more pages.")
                 break
             base_url = next_url
             params = None  # Ensure subsequent requests don't duplicate parameters
@@ -204,13 +217,13 @@ class API():
 
         # Now use the interval_minutes specified to filter the returned elements to only grab the images on certain intervals
         filtered_elements = []
-        print("Timestamps of filtered elements")
+        logging.info("Timestamps of filtered elements")
         for element in all_elements:
             timestamp_str = element['data']['extents']['temporal']['min']
             timestamp = datetime.datetime.fromisoformat(timestamp_str)
             if timestamp.minute % interval_minutes == 0:
                 filtered_elements.append(element)
-                print(timestamp)
+                logging.info(timestamp)
         return filtered_elements
 
 
@@ -226,27 +239,26 @@ class API():
                 download_url = element['data']['properties']['url']
                 download_urls.append(download_url)
             except KeyError:
-                print("Unexpected element structure:", element)
+                logging.error("Unexpected element structure:", element)
 
         if not os.path.exists(save_dir):
             os.makedirs(save_dir)
 
-        print("Beginning imagery download")
+        logging.info("Beginning imagery download")
         filenames = []
         for url in download_urls:
             filename = os.path.join(save_dir, os.path.basename(url))
             filenames.append(filename)
             response = requests.get(url, stream=True)
             response.raise_for_status()  # Raise an exception for HTTP errors
-            print(".", end='')
+            logging.info('Downloading')
             
             if not os.path.exists(filename):
                 with open(filename, 'wb') as file:
                     for chunk in response.iter_content(chunk_size=8192):
                         file.write(chunk)
-        print()
-
-        print(f"Download complete. Downloaded {len(download_urls)} images to {save_dir}")
+                logging.info('Download complete')
+        logging.info(f"Download complete. Downloaded {len(download_urls)} images to {save_dir}")
 
         return filenames
     
