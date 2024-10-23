@@ -15,7 +15,7 @@ import pytz
 
 class API():
 
-    def __init__(self,token,verbose=True):
+    def __init__(self,token,verbose=False):
         '''
         Class to interface with the WebCOOS API.
         
@@ -26,7 +26,7 @@ class API():
         verbose : bool, optional
             Whether or not to make the API calls verbose in their output. If True, relevant logging
             messages will be shown. If False, only error logging messages will be shown.
-            Default is True.
+            Default is False.
         
         Example usage:
         _ _ _ _ _ _ 
@@ -261,13 +261,13 @@ class API():
         logging.info(f"Download complete. Downloaded {len(download_urls)} images to {save_dir}")
 
         return filenames
-    
+   
     def _local2ISO(self,local_time,camera_name):
         # Get the time zone using the state the camera is in - need to search for the state name in the camera name #
-        sbool = [' '+GeoDB().state_abbrevs[i] in camera_name for i in range(50)]
-        state = np.array(GeoDB().state_abbrevs)[np.array(sbool)][0]
-        tz = GeoDB().tzs[state]
-        tz_formal = GeoDB().tz_formals[tz[0]][0]
+        sbool = [' '+geo_db['state_abbrevs'][i] in camera_name for i in range(50)]
+        state = np.array(geo_db['state_abbrevs'])[np.array(sbool)][0]
+        tz = geo_db['tzs'][state]
+        tz_formal = geo_db['tz_formals'][tz[0]][0]
         # Get the full datetime object and assign time zone #
         dt_local = datetime.datetime(int(local_time[0:4]),
                                      int(local_time[4:6]),
@@ -281,43 +281,18 @@ class API():
         return ISO
 
 
-class GeoDB:
-    def __init__(self):
-        self.state_abbrevs = [
-                'AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA',
-                'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD',
-                'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ',
-                'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC',
-                'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY'
-                                                                ]
-        self.tzs = {'ME': ['Eastern'],
-                    'NH': ['Eastern'],
-                    'MA': ['Eastern'],
-                    'RI': ['Eastern'],
-                    'CT': ['Eastern'],
-                    'NY': ['Eastern'],
-                    'NJ': ['Eastern'],
-                    'PA': ['Eastern'],
-                    'DE': ['Eastern'],
-                    'MD': ['Eastern'],
-                    'VA': ['Eastern'],
-                    'NC': ['Eastern'],
-                    'SC': ['Eastern'],
-                    'GA': ['Eastern'],
-                    'FL': ['Eastern'],  # Florida spans two time zones
-                    'AL': ['Central'],
-                    'MS': ['Central'],
-                    'LA': ['Central'],
-                    'TX': ['Central'],
-                    'WA': ['Pacific'],
-                    'OR': ['Pacific'],
-                    'CA': ['Pacific'],
-                    'MI': ['Central'],  # Michigan spans two time zones (Great Lakes)
-                    'IL': ['Central'],
-                    'IN': ['Central'],  # Indiana spans two time zones
-                    'OH': ['Eastern'],
-                    'WI': ['Central']}
-        
-        self.tz_formals = {'Eastern':['America/New_York'],
-                           'Central':['America/Chicago'],
-                           'Pacific':['America/Los_Angeles']}
+geo_db = {'state_abbrevs':['AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA',
+                            'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD',
+                            'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ',
+                            'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC',
+                            'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY'],
+         'tzs':{'ME': ['Eastern'],'NH': ['Eastern'],'MA': ['Eastern'],'RI': ['Eastern'],'CT': ['Eastern'],
+                        'NY': ['Eastern'],'NJ': ['Eastern'],'PA': ['Eastern'],'DE': ['Eastern'],'MD': ['Eastern'],
+                        'VA': ['Eastern'],'NC': ['Eastern'],'SC': ['Eastern'],'GA': ['Eastern'],'FL': ['Eastern'], 
+                        'AL': ['Central'],'MS': ['Central'],'LA': ['Central'],'TX': ['Central'],'WA': ['Pacific'],
+                        'OR': ['Pacific'],'CA': ['Pacific'], 'MI': ['Central'],'IL': ['Central'],'IN': ['Central'], 
+                        'OH': ['Eastern'],'WI': ['Central']},
+         'tz_formals':{'Eastern':['America/New_York'],
+                        'Central':['America/Chicago'],
+                        'Pacific':['America/Los_Angeles']}}
+ 
