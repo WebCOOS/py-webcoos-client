@@ -48,8 +48,11 @@ class API():
         }      
         #Access the json assets via the webcoos API and get the camera list
         self.assets_json = self._make_api_request(self.api_base_url,self.HEADERS)
-        df_cams = self._get_camera_list(self.assets_json)
-        self.cameras = df_cams
+        if self.assets_json is not None:
+            df_cams = self._get_camera_list(self.assets_json)
+            self.cameras = df_cams
+        else:
+            raise ValueError('API access token is not valid.')
         
     def get_cameras(self):
         return self.cameras
@@ -58,6 +61,7 @@ class API():
         '''
         Function to view the available products at a camera.
         '''
+        self._check_camera_name(camera_name)
         feeds = self._get_camera_feeds(camera_name,self.assets_json)
         feed_name = 'raw-video-data'
         products = self._get_camera_products(feed_name,feeds,camera_name)
@@ -70,6 +74,7 @@ class API():
         '''
         Function to view available data for a product at a camera.
         '''
+        self._check_camera_name(camera_name)
         feeds = self._get_camera_feeds(camera_name,self.assets_json)
         feed_name = 'raw-video-data'
         products = self._get_camera_products(feed_name,feeds,camera_name)
@@ -85,6 +90,7 @@ class API():
         '''
         Function to download imagery.
         '''
+        self._check_camera_name(camera_name)
         start = self._local2ISO(start,camera_name)
         stop = self._local2ISO(stop,camera_name)
         feeds = self._get_camera_feeds(camera_name,self.assets_json)
@@ -94,6 +100,10 @@ class API():
         filtered_elements = self._get_elements(service_slug,start,stop,interval,self.api_base_url,self.HEADERS)
         filenames = self._download_imagery(filtered_elements,save_dir)
         return filenames
+    
+    def _check_camera_name(self,camera_name):
+        if camera_name not in self.get_cameras()['Camera Name'].values:
+            raise ValueError('Camera is not an available WebCOOS camera.')
     
     def _make_api_request(self,api_base_url,HEADERS):
         '''
