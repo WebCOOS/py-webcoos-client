@@ -1,3 +1,4 @@
 .ipynb_checkpoints/
 pywebcoos/__pycache__/
 pywebcoos.egg-info/
+test/__pycache__/
