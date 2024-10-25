@@ -62,6 +62,7 @@ class API():
         Function to view the available products at a camera.
         '''
         self._check_camera_name(camera_name)
+        
         feeds = self._get_camera_feeds(camera_name,self.assets_json)
         feed_name = 'raw-video-data'
         products = self._get_camera_products(feed_name,feeds,camera_name)
@@ -75,6 +76,8 @@ class API():
         Function to view available data for a product at a camera.
         '''
         self._check_camera_name(camera_name)
+        self._check_product_name(camera_name,product_name)
+        
         feeds = self._get_camera_feeds(camera_name,self.assets_json)
         feed_name = 'raw-video-data'
         products = self._get_camera_products(feed_name,feeds,camera_name)
@@ -90,7 +93,15 @@ class API():
         '''
         Function to download imagery.
         '''
+        start = str(start)
+        stop = str(stop)
+        
         self._check_camera_name(camera_name)
+        self._check_product_name(camera_name,product_name)
+        self._check_date_format(start,'start')
+        self._check_date_format(stop,'stop')
+        self._check_date_range(camera_name,product_name,start,stop)
+
         start = self._local2ISO(start,camera_name)
         stop = self._local2ISO(stop,camera_name)
         feeds = self._get_camera_feeds(camera_name,self.assets_json)
@@ -105,6 +116,37 @@ class API():
         if camera_name not in self.get_cameras()['Camera Name'].values:
             raise ValueError('Camera is not an available WebCOOS camera.')
     
+    def _check_product_name(self,camera_name,product_name):
+        if product_name not in self.get_products(camera_name):
+            raise ValueError('Requested product is not available at this camera.')
+            
+    def _check_date_format(self,date,date_name):
+        if len(date)!=12:
+            raise ValueError('Requested '+date_name+' date is of improper format. Format should be yyyymmddHHMM.')
+        else:
+            try:
+                dt = datetime.datetime(int(date[0:4]),int(date[4:6]),int(date[6:8]),int(date[8:10]),int(date[10:12]))
+            except:
+                raise ValueError('Requested '+date_name+' date is of improper format. Format should be yyyymmddHHMM.')
+        
+    
+    def _check_date_range(self,camera_name,product_name,start,stop):
+        starts = self._local2ISO(start,camera_name)
+        stops = self._local2ISO(stop,camera_name)
+        ss = []
+        for s in [starts,stops]:
+            ss.append(datetime.datetime(int(s[0:4]),int(s[5:7]),int(s[8:10]),int(s[11:13]),int(s[14:16])))
+            
+        dr = self.get_inventory(camera_name,product_name)
+        dtr = []
+        for d in dr:
+            dtr.append(datetime.datetime(int(d[0:4]),int(d[5:7]),int(d[8:10]),int(d[11:13]),int(d[14:16])))
+        
+        if dtr[0]<=ss[0]<=dtr[1] and dtr[0]<=ss[1]<=dtr[1]:
+            pass
+        else:
+            raise ValueError('At least one requested date bound is outside the range of available data for this product at this camera.')  
+            
     def _make_api_request(self,api_base_url,HEADERS):
         '''
         Function to query the webcoos API for available assets
