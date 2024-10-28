@@ -5,6 +5,7 @@ A Python wrapper for the WebCOOS API.
 
 ## Table of Contents
 - [Installation](#installation)
+- [Test](#test)
 - [Usage](#usage)
 - [Disclaimer](#disclaimer)
 - [License](#license)
@@ -28,6 +29,22 @@ conda env create -f environment.yml
 conda activate py-webcoos-client
 ```
 
+
+## Test
+
+Unit and integration tests are included. 
+
+To run the tests, first set your WebCOOS API key as an environmental variable:
+
+```bash
+export API_KEY='your_key'
+```
+
+Then you can run the tests with:
+
+```bash
+pytest -v
+```
 
 ## Usage
 
