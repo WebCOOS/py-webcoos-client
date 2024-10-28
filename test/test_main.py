@@ -101,6 +101,6 @@ def test_function_integration():
     api = pywebcoos.API(str(key))
     cam = api.get_cameras().iloc[20].values[0]
     prod = api.get_products(cam)[1]
-    fname = api.download(cam,prod,202410011000,202410011001,1,'.') 
+    fname = api.download(cam, prod, 202410011000, 202410011001, 1, '.') 
     assert len(fname) > 0 , 'Image download failed.'
     os.remove('masonboro_inlet-2024-10-01-140036Z.jpg')
