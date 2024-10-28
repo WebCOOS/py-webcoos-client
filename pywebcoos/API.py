@@ -13,9 +13,10 @@ import pandas as pd
 import requests
 import pytz
 
+
 class API():
 
-    def __init__(self,token,verbose=False):
+    def __init__(self, token, verbose=False):
         '''
         Class to interface with the WebCOOS API.
         
@@ -47,7 +48,7 @@ class API():
             'Accept': 'application/json'
         }      
         #Access the json assets via the webcoos API and get the camera list
-        self.assets_json = self._make_api_request(self.api_base_url,self.HEADERS)
+        self.assets_json = self._make_api_request(self.api_base_url, self.HEADERS)
         if self.assets_json is not None:
             df_cams = self._get_camera_list(self.assets_json)
             self.cameras = df_cams
@@ -57,39 +58,37 @@ class API():
     def get_cameras(self):
         return self.cameras
     
-    def get_products(self,camera_name):
+    def get_products(self, camera_name):
         '''
         Function to view the available products at a camera.
         '''
         self._check_camera_name(camera_name)
         
-        feeds = self._get_camera_feeds(camera_name,self.assets_json)
+        feeds = self._get_camera_feeds(camera_name, self.assets_json)
         feed_name = 'raw-video-data'
-        products = self._get_camera_products(feed_name,feeds,camera_name)
+        products = self._get_camera_products(feed_name, feeds, camera_name)
         product_labels = []
         for product in products:
             product_labels.append(product['data']['common']['label'])  # Returning the product label      
         return product_labels
     
-    def get_inventory(self,camera_name,product_name):
+    def get_inventory(self, camera_name, product_name):
         '''
         Function to view available data for a product at a camera.
         '''
         self._check_camera_name(camera_name)
-        self._check_product_name(camera_name,product_name)
+        self._check_product_name(camera_name, product_name)
         
-        feeds = self._get_camera_feeds(camera_name,self.assets_json)
+        feeds = self._get_camera_feeds(camera_name, self.assets_json)
         feed_name = 'raw-video-data'
-        products = self._get_camera_products(feed_name,feeds,camera_name)
-        service_slug,df_inv = self._get_service_slug(product_name,products,feed_name,camera_name,self.api_base_url,self.HEADERS)
-        # How many days of data are there?
-        total_days_with_data = df_inv['Has Data?'].sum()
+        products = self._get_camera_products(feed_name, feeds, camera_name)
+        service_slug, df_inv = self._get_service_slug(product_name, products, feed_name, camera_name, self.api_base_url, self.HEADERS)
         # What is the range of dates with data?
         min_date = df_inv['Bin Start'].min()
         max_date = df_inv['Bin End'].max()
-        return [min_date,max_date]
+        return [min_date, max_date]
         
-    def download(self,camera_name,product_name,start,stop,interval,save_dir):
+    def download(self, camera_name, product_name, start, stop, interval, save_dir):
         '''
         Function to download imagery.
         '''
@@ -97,57 +96,56 @@ class API():
         stop = str(stop)
         
         self._check_camera_name(camera_name)
-        self._check_product_name(camera_name,product_name)
-        self._check_date_format(start,'start')
-        self._check_date_format(stop,'stop')
-        self._check_date_range(camera_name,product_name,start,stop)
+        self._check_product_name(camera_name, product_name)
+        self._check_date_format(start, 'start')
+        self._check_date_format(stop, 'stop')
+        self._check_date_range(camera_name, product_name, start, stop)
 
-        start = self._local2ISO(start,camera_name)
-        stop = self._local2ISO(stop,camera_name)
-        feeds = self._get_camera_feeds(camera_name,self.assets_json)
+        start = self._local2ISO(start, camera_name)
+        stop = self._local2ISO(stop, camera_name)
+        feeds = self._get_camera_feeds(camera_name, self.assets_json)
         feed_name = 'raw-video-data'
-        products = self._get_camera_products(feed_name,feeds,camera_name)
-        service_slug,df_inv = self._get_service_slug(product_name,products,feed_name,camera_name,self.api_base_url,self.HEADERS)
-        filtered_elements = self._get_elements(service_slug,start,stop,interval,self.api_base_url,self.HEADERS)
-        filenames = self._download_imagery(filtered_elements,save_dir)
+        products = self._get_camera_products(feed_name, feeds, camera_name)
+        service_slug, df_inv = self._get_service_slug(product_name, products, feed_name, camera_name, self.api_base_url, self.HEADERS)
+        filtered_elements = self._get_elements(service_slug, start, stop, interval, self.api_base_url, self.HEADERS)
+        filenames = self._download_imagery(filtered_elements, save_dir)
         return filenames
     
-    def _check_camera_name(self,camera_name):
+    def _check_camera_name(self, camera_name):
         if camera_name not in self.get_cameras()['Camera Name'].values:
             raise ValueError('Camera is not an available WebCOOS camera.')
     
-    def _check_product_name(self,camera_name,product_name):
+    def _check_product_name(self, camera_name, product_name):
         if product_name not in self.get_products(camera_name):
             raise ValueError('Requested product is not available at this camera.')
             
-    def _check_date_format(self,date,date_name):
-        if len(date)!=12:
+    def _check_date_format(self, date, date_name):
+        if len(date) != 12:
             raise ValueError('Requested '+date_name+' date is of improper format. Format should be yyyymmddHHMM.')
         else:
             try:
-                dt = datetime.datetime(int(date[0:4]),int(date[4:6]),int(date[6:8]),int(date[8:10]),int(date[10:12]))
-            except:
-                raise ValueError('Requested '+date_name+' date is of improper format. Format should be yyyymmddHHMM.')
-        
+                datetime.datetime(int(date[0:4]), int(date[4:6]), int(date[6:8]), int(date[8:10]), int(date[10:12]))
+            except ValueError:
+                raise ValueError('Requested '+date_name+' date is of improper format. Format should be yyyymmddHHMM.')        
     
-    def _check_date_range(self,camera_name,product_name,start,stop):
-        starts = self._local2ISO(start,camera_name)
-        stops = self._local2ISO(stop,camera_name)
+    def _check_date_range(self, camera_name, product_name, start, stop):
+        starts = self._local2ISO(start, camera_name)
+        stops = self._local2ISO(stop, camera_name)
         ss = []
-        for s in [starts,stops]:
-            ss.append(datetime.datetime(int(s[0:4]),int(s[5:7]),int(s[8:10]),int(s[11:13]),int(s[14:16])))
+        for s in [starts, stops]:
+            ss.append(datetime.datetime(int(s[0:4]), int(s[5:7]), int(s[8:10]), int(s[11:13]), int(s[14:16])))
             
-        dr = self.get_inventory(camera_name,product_name)
+        dr = self.get_inventory(camera_name, product_name)
         dtr = []
         for d in dr:
-            dtr.append(datetime.datetime(int(d[0:4]),int(d[5:7]),int(d[8:10]),int(d[11:13]),int(d[14:16])))
+            dtr.append(datetime.datetime(int(d[0:4]), int(d[5:7]), int(d[8:10]), int(d[11:13]), int(d[14:16])))
         
-        if dtr[0]<=ss[0]<=dtr[1] and dtr[0]<=ss[1]<=dtr[1]:
+        if dtr[0] <= ss[0] <= dtr[1] and dtr[0] <= ss[1] <= dtr[1]:
             pass
         else:
             raise ValueError('At least one requested date bound is outside the range of available data for this product at this camera.')  
             
-    def _make_api_request(self,api_base_url,HEADERS):
+    def _make_api_request(self, api_base_url, HEADERS):
         '''
         Function to query the webcoos API for available assets
         '''
@@ -161,9 +159,8 @@ class API():
             # raise error information if the request was not successful
             logging.error(f"Failed to retrieve assets: {response.status_code} {response.text}")
             return None
-
       
-    def _get_camera_list(self,assets_json):
+    def _get_camera_list(self, assets_json):
         '''
         Function to get the camera list
         '''
@@ -175,9 +172,8 @@ class API():
 
         # Return the dataframe
         return df_cams
- 
-    
-    def _get_camera_feeds(self,camera_name,assets_json):
+     
+    def _get_camera_feeds(self, camera_name, assets_json):
         '''
         Function to get the camera feeds for a specific camera
         '''
@@ -187,8 +183,7 @@ class API():
                 break
         return feeds
 
-
-    def _get_camera_products(self,feed_name,feeds,camera_name):
+    def _get_camera_products(self, feed_name, feeds, camera_name):
         '''
         Function to get the camera products available for that camera and feed
         '''
@@ -196,9 +191,8 @@ class API():
             if feed['data']['common']['label'] == feed_name:
                 products = feed['products']
         return products
-            
-            
-    def _get_service_slug(self,product_name,products,feed_name,camera_name,api_base_url,HEADERS):
+                        
+    def _get_service_slug(self, product_name, products, feed_name, camera_name, api_base_url, HEADERS):
         '''
         Function to get the service slug and print data inventory
         '''
@@ -228,10 +222,9 @@ class API():
         inventory_data = inventory_json['results'][0]['values']
         df_inv = pd.DataFrame(inventory_data, columns=['Bin Start', 'Has Data?', 'Bin End', 'Count', 'Bytes', 'Data Start', 'Data End'])
 
-        return service_slug,df_inv
-
+        return service_slug, df_inv
     
-    def _get_elements(self,service_slug,start_time,end_time,interval_minutes,api_base_url,HEADERS):
+    def _get_elements(self, service_slug, start_time, end_time, interval_minutes, api_base_url, HEADERS):
         '''
         Function to create and view the download urls or elements
         '''
@@ -278,8 +271,7 @@ class API():
                 logging.info(timestamp)
         return filtered_elements
 
-
-    def _download_imagery(self,filtered_elements,save_dir):
+    def _download_imagery(self, filtered_elements, save_dir):
         '''
         Function to download the data.
         '''
@@ -314,7 +306,7 @@ class API():
 
         return filenames
    
-    def _local2ISO(self,local_time,camera_name):
+    def _local2ISO(self, local_time, camera_name):
         # Get the time zone using the state the camera is in - need to search for the state name in the camera name #
         sbool = [' '+geo_db['state_abbrevs'][i] in camera_name for i in range(50)]
         state = np.array(geo_db['state_abbrevs'])[np.array(sbool)][0]
@@ -332,19 +324,18 @@ class API():
         ISO = dt_utc.isoformat()
         return ISO
 
-
-geo_db = {'state_abbrevs':['AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA',
+    
+geo_db = {'state_abbrevs': ['AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA',
                             'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD',
                             'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ',
                             'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC',
                             'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY'],
-         'tzs':{'ME': ['Eastern'],'NH': ['Eastern'],'MA': ['Eastern'],'RI': ['Eastern'],'CT': ['Eastern'],
-                        'NY': ['Eastern'],'NJ': ['Eastern'],'PA': ['Eastern'],'DE': ['Eastern'],'MD': ['Eastern'],
-                        'VA': ['Eastern'],'NC': ['Eastern'],'SC': ['Eastern'],'GA': ['Eastern'],'FL': ['Eastern'], 
-                        'AL': ['Central'],'MS': ['Central'],'LA': ['Central'],'TX': ['Central'],'WA': ['Pacific'],
-                        'OR': ['Pacific'],'CA': ['Pacific'], 'MI': ['Central'],'IL': ['Central'],'IN': ['Central'], 
-                        'OH': ['Eastern'],'WI': ['Central']},
-         'tz_formals':{'Eastern':['America/New_York'],
-                        'Central':['America/Chicago'],
-                        'Pacific':['America/Los_Angeles']}}
- 
+         'tzs': {'ME': ['Eastern'], 'NH': ['Eastern'], 'MA': ['Eastern'], 'RI': ['Eastern'], 'CT': ['Eastern'],
+                 'NY': ['Eastern'], 'NJ': ['Eastern'], 'PA': ['Eastern'], 'DE': ['Eastern'], 'MD': ['Eastern'],
+                 'VA': ['Eastern'], 'NC': ['Eastern'], 'SC': ['Eastern'], 'GA': ['Eastern'], 'FL': ['Eastern'], 
+                 'AL': ['Central'], 'MS': ['Central'], 'LA': ['Central'], 'TX': ['Central'], 'WA': ['Pacific'],
+                 'OR': ['Pacific'], 'CA': ['Pacific'], 'MI': ['Central'], 'IL': ['Central'], 'IN': ['Central'], 
+                 'OH': ['Eastern'], 'WI': ['Central']},
+         'tz_formals': {'Eastern': ['America/New_York'],
+                        'Central': ['America/Chicago'],
+                        'Pacific': ['America/Los_Angeles']}}
