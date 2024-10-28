@@ -51,15 +51,15 @@ pytest -v
 ```python
 import pywebcoos
 api = pywebcoos.API('your_API_token')
-api.view_cameras()
-api.view_products('Charleston Harbor, SC')
-api.view_inventory('Charleston Harbor, SC','video-archive')
-api.download('Charleston Harbor, SC',
-             'video-archive',
-             '202401011000',
-             '202401011030',
-             interval=1,
-             save_dir='.')
+print(api.get_cameras())
+print(api.get_products('Charleston Harbor, SC'))
+print(api.get_inventory('Charleston Harbor, SC','video-archive'))
+files = api.download('Charleston Harbor, SC',
+                     'video-archive',
+                     '202401011000',
+                     '202401011030',
+                     interval=1,
+                     save_dir='.')
 ```
 
 See demo.ipynb for more usage details.
