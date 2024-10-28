@@ -34,7 +34,7 @@ conda activate py-webcoos-client
 
 Unit and integration tests are included. 
 
-To run the tests, first set your WebCOOS API key as an environmental variable:
+To run the tests, follow the "For development" installation instructions. Then, set your WebCOOS API key as an environmental variable:
 
 ```bash
 export API_KEY='your_key'
