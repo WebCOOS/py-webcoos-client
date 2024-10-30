@@ -54,12 +54,7 @@ api = pywebcoos.API('your_API_token')
 print(api.get_cameras())
 print(api.get_products('Charleston Harbor, SC'))
 print(api.get_inventory('Charleston Harbor, SC','video-archive'))
-files = api.download('Charleston Harbor, SC',
-                     'video-archive',
-                     '202401011000',
-                     '202401011030',
-                     interval=1,
-                     save_dir='.')
+files = api.download('Charleston Harbor, SC','video-archive','202401011000','202401011030',interval=1,save_dir='.')
 ```
 
 See demo.ipynb for more usage details.
