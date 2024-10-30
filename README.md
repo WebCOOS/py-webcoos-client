@@ -56,7 +56,7 @@ pytest -v
 
 ```python
 import pywebcoos
-api = pywebcoos.API('your_API_token')
+api = pywebcoos.API('your_API_token',verbose=True)
 print(api.get_cameras())
 print(api.get_products('Charleston Harbor, SC'))
 print(api.get_inventory('Charleston Harbor, SC','video-archive'))
