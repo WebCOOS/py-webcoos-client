@@ -36,8 +36,14 @@ Unit and integration tests are included.
 
 To run the tests, follow the "For development" installation instructions. Then, set your WebCOOS API key as an environmental variable:
 
+Linux:
 ```bash
 export API_KEY='your_key'
+```
+
+Windows:
+```bash
+setx API_KEY 'your_key'
 ```
 
 Then you can run the tests with:
