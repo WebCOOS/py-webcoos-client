@@ -340,4 +340,4 @@ geo_db = {'state_abbrevs': ['AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL'
                          'Central': ['America/Chicago'],
                          'Pacific': ['America/Los_Angeles'],
                          'Alaska': ['America/Nome'],
-                         'Hawaii': ['America/Hawaii']}}
+                         'Hawaii': ['US/Hawaii']}}
