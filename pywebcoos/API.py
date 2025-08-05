@@ -335,8 +335,9 @@ geo_db = {'state_abbrevs': ['AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL'
                   'VA': ['Eastern'], 'NC': ['Eastern'], 'SC': ['Eastern'], 'GA': ['Eastern'], 'FL': ['Eastern'], 
                   'AL': ['Central'], 'MS': ['Central'], 'LA': ['Central'], 'TX': ['Central'], 'WA': ['Pacific'],
                   'OR': ['Pacific'], 'CA': ['Pacific'], 'MI': ['Central'], 'IL': ['Central'], 'IN': ['Central'], 
-                  'OH': ['Eastern'], 'WI': ['Central'], 'AK': ['Alaska']},
+                  'OH': ['Eastern'], 'WI': ['Central'], 'AK': ['Alaska'], 'HI': ['Hawaii']},
           'tz_formals': {'Eastern': ['America/New_York'],
                          'Central': ['America/Chicago'],
                          'Pacific': ['America/Los_Angeles'],
-                         'Alaska': ['America/Nome']}}
+                         'Alaska': ['America/Nome'],
+                         'Hawaii': ['America/Hawaii']}}

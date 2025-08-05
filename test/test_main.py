@@ -74,12 +74,12 @@ def test_download_videos():
     api = pywebcoos.API(str(key))
     fname = api.download('Charleston Harbor, SC',
                          'video-archive',
-                         '202401011000',
-                         '202401011010',
+                         '202501011000',
+                         '202501011010',
                          1,
                          '.')
     assert len(fname) > 0 , 'Video download failed.'
-    os.remove('nwlon_charleston-2024-01-01-150123Z.mp4')
+    os.remove('nwlon_charleston-2025-01-01-150452Z.mp4')
 
     
 def test_download_images():
@@ -87,19 +87,19 @@ def test_download_images():
     api = pywebcoos.API(str(key))
     fname = api.download('Charleston Harbor, SC',
                          'one-minute-stills',
-                         '202401011000',
-                         '202401011001',
+                         '202501011000',
+                         '202501011001',
                          1,
                          '.')
     assert len(fname) > 0 , 'Image download failed.'
-    os.remove('nwlon_charleston-2024-01-01-150053Z.jpg')
+    os.remove('nwlon_charleston-2025-01-01-150023Z.jpg')
 
 
 # Integration test #
 def test_function_integration():
     key = _get_key()
     api = pywebcoos.API(str(key))
-    cam = api.get_cameras().iloc[20].values[0]
+    cam = api.get_cameras().iloc[23].values[0]
     prod = api.get_products(cam)[1]
     fname = api.download(cam, prod, 202410011000, 202410011001, 1, '.') 
     assert len(fname) > 0 , 'Image download failed.'
