@@ -317,7 +317,7 @@ class API():
                 state = np.array(geo_db['state_abbrevs'])[np.array(sbool)][0]
                 tz = geo_db['tzs'][state]
                 self.tz = geo_db['tz_formals'][tz[0]][0]
-            except: # If both methods fail, default to UTC and warn the user #
+            except ValueError:  # If both methods fail, default to UTC and warn the user #
                 self.tz = 'UTC'
                 logging.info('Timezone of camera could not be detected or derived, defaulting to UTC.')
             else:
