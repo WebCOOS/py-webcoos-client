@@ -57,6 +57,8 @@ def test_download_videos_for_camera_without_state_in_name_passes():
                              '202510031010',
                              1,
                              '.')
+    
+    os.remove('sausalito_galilee-2025-10-03-170924Z.mp4')
     except IndexError:
         fname = None
     assert fname is not None , 'Imagery download for Sausalito camera failed because timezone could not be detected'
