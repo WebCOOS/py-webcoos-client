@@ -54,13 +54,7 @@ class API():
             self.cameras = df_cams
         else:
             raise ValueError('API access token is not valid.')
-        # Also grab the timezone of the camera #
-        try:  # Cameras should have a timezone field in their asset lists #
-            self.tz = self.assets_json['results'][0]['data']['properties']['timezone']
-        except KeyError:  # If a camera doesn't have a timezone field, try to derive it from the name of the camera (looks for a ', CA' type abbrev in the name) #
-            self.tz = None
-        
-        
+               
     def get_cameras(self):
         return self.cameras
     
@@ -313,19 +307,23 @@ class API():
         return filenames
    
     def _local2ISO(self, local_time, camera_name):
-       # Get the camera's time zone #
-        if self.tz is None:
+        # Get the camera's time zone #
+        i_camera = int(np.where(self.cameras['Camera Name'] == camera_name)[0])      
+        try:  # Cameras should have a timezone field in their asset lists #
+            self.tz = self.assets_json['results'][i_camera]['data']['properties']['timezone']
+        except KeyError:  # If a camera doesn't have a timezone field, try to derive it from the name of the camera (looks for a ', CA' type abbrev in the name) #
             try:  # If a camera doesn't have a timezone field, try to derive it from the name of the camera (looks for a ', CA' type abbrev in the name) #
                 sbool = [' '+geo_db['state_abbrevs'][i] in camera_name for i in range(50)]
                 state = np.array(geo_db['state_abbrevs'])[np.array(sbool)][0]
                 tz = geo_db['tzs'][state]
                 self.tz = geo_db['tz_formals'][tz[0]][0]
-                logging.info('Camera timezone could not be detected, but was derived from camera name')
             except: # If both methods fail, default to UTC and warn the user #
                 self.tz = 'UTC'
                 logging.info('Timezone of camera could not be detected or derived, defaulting to UTC.')
+            else:
+                logging.info('Camera timezone could not be detected, but was derived from camera name')
         else:
-            logging.info('Camera timezone found on API')
+            logging.info('Camera timezone detected')
                 
         # Get the full datetime object and assign time zone #
         dt_local = datetime.datetime(int(local_time[0:4]),
