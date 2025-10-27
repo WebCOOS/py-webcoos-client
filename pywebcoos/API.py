@@ -39,7 +39,7 @@ class API():
         if verbose:
             logging.basicConfig(level=logging.INFO)
         else:
-            logging.basicConfig(level=logging.ERROR)
+            logging.basicConfig(level=logging.WARNING)
 
         # Establish the base URL and headers for requests #
         self.api_base_url = 'https://app.webcoos.org/webcoos/api/v1'
@@ -321,7 +321,7 @@ class API():
                 self.tz = 'UTC'
                 logging.info('Timezone of camera could not be detected or derived, defaulting to UTC.')
             else:
-                logging.info('Camera timezone could not be detected, but was derived from camera name')
+                logging.warning('Camera timezone could not be detected, but was derived from camera name')
         else:
             logging.info('Camera timezone detected')
                 
