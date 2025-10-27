@@ -319,9 +319,9 @@ class API():
                 self.tz = geo_db['tz_formals'][tz[0]][0]
             except ValueError:  # If both methods fail, default to UTC and warn the user #
                 self.tz = 'UTC'
-                logging.info('Timezone of camera could not be detected or derived, defaulting to UTC.')
+                logging.warning('Timezone of camera could not be detected or derived, defaulting to UTC.')
             else:
-                logging.warning('Camera timezone could not be detected, but was derived from camera name')
+                logging.info('Camera timezone could not be detected, but was derived from camera name')
         else:
             logging.info('Camera timezone detected')
                 
