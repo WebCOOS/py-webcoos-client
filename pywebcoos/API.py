@@ -54,6 +54,12 @@ class API():
             self.cameras = df_cams
         else:
             raise ValueError('API access token is not valid.')
+        # Also grab the timezone of the camera #
+        try:  # Cameras should have a timezone field in their asset lists #
+            self.tz = self.assets_json['results'][0]['data']['properties']['timezone']
+        except KeyError:  # If a camera doesn't have a timezone field, try to derive it from the name of the camera (looks for a ', CA' type abbrev in the name) #
+            self.tz = None
+        
         
     def get_cameras(self):
         return self.cameras
@@ -307,18 +313,27 @@ class API():
         return filenames
    
     def _local2ISO(self, local_time, camera_name):
-        # Get the time zone using the state the camera is in - need to search for the state name in the camera name #
-        sbool = [' '+geo_db['state_abbrevs'][i] in camera_name for i in range(50)]
-        state = np.array(geo_db['state_abbrevs'])[np.array(sbool)][0]
-        tz = geo_db['tzs'][state]
-        tz_formal = geo_db['tz_formals'][tz[0]][0]
+       # Get the camera's time zone #
+        if self.tz is None:
+            try:  # If a camera doesn't have a timezone field, try to derive it from the name of the camera (looks for a ', CA' type abbrev in the name) #
+                sbool = [' '+geo_db['state_abbrevs'][i] in camera_name for i in range(50)]
+                state = np.array(geo_db['state_abbrevs'])[np.array(sbool)][0]
+                tz = geo_db['tzs'][state]
+                self.tz = geo_db['tz_formals'][tz[0]][0]
+                logging.info('Camera timezone could not be detected, but was derived from camera name')
+            except: # If both methods fail, default to UTC and warn the user #
+                self.tz = 'UTC'
+                logging.info('Timezone of camera could not be detected or derived, defaulting to UTC.')
+        else:
+            logging.info('Camera timezone found on API')
+                
         # Get the full datetime object and assign time zone #
         dt_local = datetime.datetime(int(local_time[0:4]),
                                      int(local_time[4:6]),
                                      int(local_time[6:8]),
                                      int(local_time[8:10]),
                                      int(local_time[10:12]))
-        dt_local = pytz.timezone(tz_formal).localize(dt_local)
+        dt_local = pytz.timezone(self.tz).localize(dt_local)
         # Convert to UTC and make ISO #
         dt_utc = dt_local.astimezone(pytz.timezone('UTC'))
         ISO = dt_utc.isoformat()
