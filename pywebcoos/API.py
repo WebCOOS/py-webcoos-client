@@ -13,6 +13,8 @@ import pandas as pd
 import requests
 import pytz
 
+from . import timezones
+
 
 class API():
 
@@ -313,10 +315,7 @@ class API():
             self.tz = self.assets_json['results'][i_camera]['data']['properties']['timezone']
         except KeyError:  # If a camera doesn't have a timezone field, try to derive it from the name of the camera (looks for a ', CA' type abbrev in the name) #
             try:  # If a camera doesn't have a timezone field, try to derive it from the name of the camera (looks for a ', CA' type abbrev in the name) #
-                sbool = [' '+geo_db['state_abbrevs'][i] in camera_name for i in range(50)]
-                state = np.array(geo_db['state_abbrevs'])[np.array(sbool)][0]
-                tz = geo_db['tzs'][state]
-                self.tz = geo_db['tz_formals'][tz[0]][0]
+                self.tz = timezones.from_name(camera_name)
             except ValueError:  # If both methods fail, default to UTC and warn the user #
                 self.tz = 'UTC'
                 logging.warning('Timezone of camera could not be detected or derived, defaulting to UTC.')
@@ -336,21 +335,3 @@ class API():
         dt_utc = dt_local.astimezone(pytz.timezone('UTC'))
         ISO = dt_utc.isoformat()
         return ISO
-
-    
-geo_db = {'state_abbrevs': ['AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA',
-                            'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD',
-                            'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ',
-                            'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC',
-                            'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY'],
-          'tzs': {'ME': ['Eastern'], 'NH': ['Eastern'], 'MA': ['Eastern'], 'RI': ['Eastern'], 'CT': ['Eastern'],
-                  'NY': ['Eastern'], 'NJ': ['Eastern'], 'PA': ['Eastern'], 'DE': ['Eastern'], 'MD': ['Eastern'],
-                  'VA': ['Eastern'], 'NC': ['Eastern'], 'SC': ['Eastern'], 'GA': ['Eastern'], 'FL': ['Eastern'], 
-                  'AL': ['Central'], 'MS': ['Central'], 'LA': ['Central'], 'TX': ['Central'], 'WA': ['Pacific'],
-                  'OR': ['Pacific'], 'CA': ['Pacific'], 'MI': ['Central'], 'IL': ['Central'], 'IN': ['Central'], 
-                  'OH': ['Eastern'], 'WI': ['Central'], 'AK': ['Alaska'], 'HI': ['Hawaii']},
-          'tz_formals': {'Eastern': ['America/New_York'],
-                         'Central': ['America/Chicago'],
-                         'Pacific': ['America/Los_Angeles'],
-                         'Alaska': ['America/Nome'],
-                         'Hawaii': ['US/Hawaii']}}
