@@ -116,7 +116,7 @@ def test_download_images():
 def test_function_integration():
     key = _get_key()
     api = pywebcoos.API(str(key))
-    cam = api.get_cameras().iloc[23].values[0]
+    cam = api.get_cameras()[api.get_cameras()['Camera Name'] == 'Masonboro Inlet, Wrightsville Beach, NC'].values[0][0]
     prod = api.get_products(cam)[1]
     fname = api.download(cam, prod, 202410011000, 202410011001, 1, '.') 
     assert len(fname) > 0 , 'Image download failed.'
