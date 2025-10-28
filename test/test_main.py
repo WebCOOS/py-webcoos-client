@@ -47,6 +47,23 @@ def test_date_out_of_range_raises_exception():
         api.download('Charleston Harbor, SC', 'video-archive', '190001011000', '190001011010', 1, '.')  
 
         
+def test_download_videos_for_camera_without_state_in_name_passes():
+    key = _get_key()
+    api = pywebcoos.API(str(key))
+    try:
+        fname = api.download('Sausalito - Galilee Harbor',
+                             'video-archive',
+                             '202510031000',
+                             '202510031010',
+                             1,
+                             '.')
+    
+        os.remove('sausalito_galilee-2025-10-03-170924Z.mp4')
+    except IndexError:
+        fname = None
+    assert fname is not None , 'Imagery download for Sausalito camera failed because timezone could not be detected'
+
+
 # Unit tests #
 def test_get_cameras():
     key = _get_key()
