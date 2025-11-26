@@ -293,7 +293,7 @@ class API():
         logging.info("Beginning imagery download")
         filenames = []
         for url in download_urls:
-            filename = os.path.join(save_dir, os.path.basename(url))
+            filename = os.path.join(save_dir, os.path.basename(url)).replace(':','')
             filenames.append(filename)
             response = requests.get(url, stream=True)
             response.raise_for_status()  # Raise an exception for HTTP errors
