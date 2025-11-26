@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pywebcoos"
+version = "0.1.1"
+description = "Python wrapper for the WebCOOS API."
+readme = "README.md"
+authors = [
+  { name="Matthew P. Conlin", email="matthew.conlin@noaa.gov" },
+  { name="Greg Dusek", email="gregory.dusek@noaa.gov" }
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+requires-python = ">=3.0"
+dependencies = [
+	# "numpy",
+	# "pandas",
+	# "pytz",
+	# "requests"
+]
+license-files = ["LICENSE.txt"]
+
+[project.urls]
+"WebCOOS Technical Docs" = "https://webcoos.org/docs/"
+"Register for API key" = "https://app.webcoos.org/u/accounts/login/"
