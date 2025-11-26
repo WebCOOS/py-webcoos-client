@@ -64,6 +64,23 @@ def test_download_videos_for_camera_without_state_in_name_passes():
     assert fname is not None , 'Imagery download for Sausalito camera failed because timezone could not be detected'
 
 
+def test_download_image_from_camera_with_colons_in_filename_passes():
+    key = _get_key()
+    api = pywebcoos.API(str(key))
+    try:
+        fname = api.download('Hoboken Terminal (north view), Hoboken, NJ',
+                             '10-minute-stills',
+                             '202510300723',
+                             '202510300723',
+                             1,
+                             '.')
+    
+        os.remove('stevens_hoboken_2025-10-30_112300Z.jpg')
+    except OSError:
+        fname = None
+    assert fname is not None , 'Imagery download for Hoboken camera failed due to colons in filename'
+    
+    
 # Unit tests #
 def test_get_cameras():
     key = _get_key()
