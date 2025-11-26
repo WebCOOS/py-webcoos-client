@@ -17,7 +17,7 @@ A Python wrapper for the WebCOOS API.
 For general use:
 
 ```bash
-pip install git+https://github.com/WebCOOS/py-webcoos-client.git#egg=pywebcoos
+pip install git+https://github.com/WebCOOS/py-webcoos-client.git
 ```
 
 For development:
